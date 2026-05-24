@@ -397,3 +397,65 @@ Add a line to the `.NOTES` header block for every version:
 v1.0.0 - 05/21/2025 - Initial release
 v1.0.1 - MM/DD/YYYY - Brief description of change
 ```
+
+---
+
+## Inline Comment Reference
+
+The script is heavily commented throughout. The sections below point to the
+areas that have the most detailed inline explanations, so you know where to
+look when reading the code.
+
+### Set-StrictMode (line ~36)
+
+Explains what strict mode does and why it is enabled. Short read — worth
+understanding before making any changes.
+
+### MODULE INIT section (lines ~39-89)
+
+Explains:
+- What the `$script:` variable prefix means and why it matters
+- Why variables are pre-declared as `$null` (strict mode requirement)
+- Why `$script:7zaAvailable` exists and how it is used by every function
+- How `Join-Path` builds the path to `7za.exe` step by step
+
+### Invoke-7za — password redaction loop (lines ~168-200)
+
+The most complex logic in the module. The inline comments walk through both
+forms of the 7za.exe password argument (`-pPASSWORD` glued vs. `-p PASSWORD`
+separated) and explain how the `$skipNext` flag handles the two-argument form.
+
+### Compress-7z — argument array comments (lines ~220-245)
+
+Each 7za.exe flag (`a`, `-t7z`, `-mx=`, `-bd`, `-y`, `-r`, `-mhe=on`) is
+explained inline. Good reference if you need to understand or extend the
+argument list.
+
+### Expand-7z — overwrite flags (lines ~315-320)
+
+Explains the difference between `-aoa` (overwrite all) and `-aos` (skip
+existing), and how `-Force` controls which is used.
+
+### Expand-7z — `-o` output path flag (lines ~323-325)
+
+Notes the unusual 7za.exe convention of gluing the path directly onto `-o`
+with no space (e.g. `-oC:\Restore`).
+
+### Get-7zArchive — `-slt` output parsing (lines ~653-775)
+
+The most complex section in the module. The inline comments include:
+- A sample of what `-slt` output looks like so you can understand what is
+  being parsed
+- Why `ArrayList` is used instead of a regular array
+- Why `$inEntries` is needed (skipping header lines)
+- Why `[void]` is used when calling `.Add()`
+- How the regex `'^([^=]+?)\s*=\s*(.*)$'` works, broken down piece by piece
+- Why `[DateTime]::ParseExact` with `InvariantCulture` is used instead of a
+  simple cast
+- Why `[long]::TryParse` with `[ref]` is safer than `[long]$value`
+- The edge case of the last entry not being followed by a blank line
+
+### MODULE EXPORTS section (lines ~796-814)
+
+Explains why `Export-ModuleMember` exists, what it controls, and why
+`Invoke-7za` is intentionally left off the export list.
